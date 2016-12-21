@@ -1,11 +1,11 @@
-# Interactive prompting for user credentials
+# Interactive prompting for user credentials. run the script by typing .\<file name>. No changes within the file are necearry. you can provide parameters in the command line itself
 
 param(
 
     [Parameter(Mandatory=$true, HelpMessage="username")]
      [String]$username,
-	[Parameter(Mandatory=$true, HelpMessage="Password?")]
-     [SecureString]$password,
+	[Parameter(Mandatory=$false, HelpMessage="clear text password")]
+     [String]$ClearTextPassword,
 	[Parameter(Mandatory=$true, HelpMessage="IP Addess of Management Server")]
      [String]$ServerIPAddress,
 	[Parameter(Mandatory=$true, HelpMessage="New Host Name")]
@@ -15,17 +15,25 @@ param(
 
 )
 
-# from here down no edits are necessary
+
 #resetting variables
 $myresponse=""
 $mysid=""
 $myaddhostresponse=""
 $mypublishresponse=""
 
+if ($ClearTextPassword -eq "")
+	{	$credential=get-credential -message "Please enter your SmartCenter username and password" -username $username
+		$username=$credential.username
+		$password=$credential.GetNetworkCredential().password
+	}
+	else {$password=$ClearTextPassword}
 
 #create credential json
-$myjson=@{user=$username;password=[Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($password))} | convertto-json -compress
+$myjson=@{user=$username;password=$password} | convertto-json -compress
 $loginURI="https://${serverIPAddress}/web_api/login"
+
+
 
 #allow self signed certs
 [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $True }
@@ -36,6 +44,8 @@ $myresponse=Invoke-WebRequest -Uri $loginURI -Body $myjson -ContentType applicat
 #remove objects with password
 rv "password"
 rv "myjson"
+if (!($ClearTextPassword -eq "")) {rv "ClearTextPassword"}
+
 
 #make the content of the response a powershell object
 $myresponsecontent=$myresponse.Content | ConvertFrom-Json
