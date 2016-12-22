@@ -7,35 +7,26 @@ param(
 	[Parameter(Mandatory=$false, HelpMessage="clear text password")]
      [String]$ClearTextPassword,
 	[Parameter(Mandatory=$true, HelpMessage="IP Addess of Management Server")]
-     [String]$ServerIPAddress,
-	[Parameter(Mandatory=$true, HelpMessage="New Host Name")]
-     [String]$hostname,
-	 [Parameter(Mandatory=$true, HelpMessage="New Host IP Address")]
-     [String]$hostIPaddress
-
+     [String]$ServerIPAddress
 )
 
 
-#resetting variables that may have lingered from previous runs
+#resetting variables
 $myresponse=""
 $mysid=""
 $myaddhostresponse=""
 $mypublishresponse=""
 
-# securely prompt for password if none was provided
-
 if ($ClearTextPassword -eq "")
 	{	$credential=get-credential -message "Please enter your SmartCenter username and password" -username $username
+		$username=$credential.username
 		$password=$credential.GetNetworkCredential().password
 	}
 	else {$password=$ClearTextPassword}
 
 #create credential json
 $myjson=@{user=$username;password=$password} | convertto-json -compress
-
-# create login URI
 $loginURI="https://${serverIPAddress}/web_api/login"
-
 
 #allow self signed certs
 [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $True }
@@ -47,7 +38,6 @@ $myresponse=Invoke-WebRequest -Uri $loginURI -Body $myjson -ContentType applicat
 rv "password"
 rv "myjson"
 if (!($ClearTextPassword -eq "")) {rv "ClearTextPassword"}
-if (!($credential -eq "")) {rv "credential"}
 
 #make the content of the response a powershell object
 $myresponsecontent=$myresponse.Content | ConvertFrom-Json
@@ -59,22 +49,30 @@ $mysid=$myresponsecontent.sid
 #create an x-chkp-sid header
 $headers=@{"x-chkp-sid"=$mysid}
 
+#create an x-chkp-sid header
+$headers=@{"x-chkp-sid"=$mysid}
+
 # create a request body
-$mybodyjson=@{name=$hostname;"ip-address"=$hostIPaddress} | convertto-json -compress
+$mybodyjson=@{
+  "offset" = 0;
+  "limit" = 50;
+  "name" = "Permissive";
+  "details-level" = "Standard";
+  "use-object-dictionary" = "true";
+} | convertto-json -compress
 
 #create the add host uri
-$AddHostURI="https://${serverIPAddress}/web_api/add-host"
+$AddHostURI="https://${serverIPAddress}/web_api/show-access-rulebase"
 
-# add host to server
+# exect to server
 
-$myaddhostresponse=Invoke-WebRequest -uri $AddHostURI -ContentType application/json -Method POST -headers $headers -body $mybodyjson
+try {$myaddhostresponse=Invoke-WebRequest -uri $AddHostURI -ContentType application/json -Method POST -headers $headers -body $mybodyjson}
+  catch [System.Net.WebException] {
+        $myaddhostresponse = $_.Exception.Response
 
-# publish
-
-$mypublishURI="https://${serverIPAddress}/web_api/publish"
-$mypublishbodyjson=@{} | convertto-json -compress
-
-$mypublishresponse=Invoke-WebRequest -uri $mypublishURI -ContentType application/json -Method POST -headers $headers -body $mypublishbodyjson
-
-#show happy ending
-if ($mypublishresponse.statuscode -eq 200){"Script completed. Host was added"}
+    }
+    catch {
+        Write-Error $_.Exception
+        return $null
+    }
+	$myaddhostresponse
