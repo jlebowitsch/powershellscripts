@@ -16,23 +16,25 @@ param(
 )
 
 
-#resetting variables
+#resetting variables that may have lingered from previous runs
 $myresponse=""
 $mysid=""
 $myaddhostresponse=""
 $mypublishresponse=""
 
+# securely prompt for password if none was provided
+
 if ($ClearTextPassword -eq "")
 	{	$credential=get-credential -message "Please enter your SmartCenter username and password" -username $username
-		$username=$credential.username
 		$password=$credential.GetNetworkCredential().password
 	}
 	else {$password=$ClearTextPassword}
 
 #create credential json
 $myjson=@{user=$username;password=$password} | convertto-json -compress
-$loginURI="https://${serverIPAddress}/web_api/login"
 
+# create login URI
+$loginURI="https://${serverIPAddress}/web_api/login"
 
 
 #allow self signed certs
@@ -45,7 +47,7 @@ $myresponse=Invoke-WebRequest -Uri $loginURI -Body $myjson -ContentType applicat
 rv "password"
 rv "myjson"
 if (!($ClearTextPassword -eq "")) {rv "ClearTextPassword"}
-
+if (!($credential -eq "")) {rv "credential"}
 
 #make the content of the response a powershell object
 $myresponsecontent=$myresponse.Content | ConvertFrom-Json

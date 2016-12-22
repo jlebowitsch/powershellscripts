@@ -55,10 +55,10 @@ $headers=@{"x-chkp-sid"=$mysid}
 # create a request body
 $mybodyjson=@{
   "offset" = 0;
-  "limit" = 20;
+  "limit" = 50;
   "name" = "Permissive";
   "details-level" = "Standard";
-  "use-object-dictionary" = true;
+  "use-object-dictionary" = "true";
 } | convertto-json -compress
 
 #create the add host uri
