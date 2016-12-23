@@ -54,8 +54,9 @@ $myresponse=Invoke-WebRequest -Uri $loginURI -Body $myjson -ContentType applicat
 #remove objects with password
 rv "password"
 rv "myjson"
-if (!($ClearTextPassword -eq "")) {rv "ClearTextPassword"}
-if (!($credential -eq "")) {rv "credential"}
+if ($ClearTextPassword.Length -gt 0) {rv "ClearTextPassword"}
+if ($credential.password.Length -gt 0) {rv "credential"}
+
 
 #make the content of the response a powershell object
 $myresponsecontent=$myresponse.Content | ConvertFrom-Json
@@ -66,4 +67,5 @@ $mysid=$myresponsecontent.sid
 
 #create an x-chkp-sid header
 $global:myCPHeader=@{"x-chkp-sid"=$mysid}
+$myresponsecontent
 
