@@ -9,9 +9,21 @@ param(
 	 
 
 )
+
 # do a sanity check to see that the user is logged in. If not call the login script
 
-if(($myCPHeader.length -lt 1) -OR ($myCPSmartCenterIPAddress.length -lt 1)){& ((Split-Path $MyInvocation.InvocationName) + "\CPAPI-Authenticate.ps1")}
+
+try {
+    $mykeepaliveURI="https://${myCPSmartCenterIPAddress}/web_api/keepalive"
+    $myemptyjson=@{} | convertto-json -compress
+    $keepalive=Invoke-WebRequest -uri $mykeepaliveURI -ContentType application/json -Method POST -headers $myCPHeader -body $myemptyjson -ErrorAction Stop
+    }
+
+   catch  {
+        $keepalive = $_.Exception.Response
+        & ((Split-Path $MyInvocation.InvocationName) + "\CPAPI-Authenticate.ps1")
+
+    }
 
 
 #Prep objects  requests 
