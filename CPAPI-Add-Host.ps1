@@ -1,6 +1,30 @@
-# This script adds a single host to SmartCenter. It prompts the user to add a host name and host IP address. 
-# If nat settings need to be added, use them as parameters in the command line themselves (try typing "-" after the script name. 
-# you'll need to add true to NATSettings and then all the required information)
+
+<#
+
+
+.SYNOPSIS
+This Powershell Script adds hosts to the SmartCenter database.
+
+.DESCRIPTION
+This script adds a single host to SmartCenter. Unless the user enters the parameters to the call itself,  it prompts the user to add a host name and host IP address. 
+The script first tries to use shell objects to send a keepalive to the management server. 
+If that fails, the CPAPI-Authenticate is invoked and the user is prompted to enter his credentials and the smartcenter details. 
+If NAT settings need to be added, use them as parameters in the command line themselves (try typing "-" after the script name. 
+you'll need to add "true" to NATSettings and then all the required information)
+
+.EXAMPLE
+PS C:\Users\lebowits\Documents\GitHub\powershellscripts> .\CPAPI-Add-Host.ps1 -hostname NewHost -hostIPaddress 10.10.10.10 -NATSettings TRUE -autorule TRUE -Method hide -HideBehind gateway -Installon MyGateway
+
+.NOTES
+Some options of the Add-host API are not implemented in this script!
+
+
+.LINK
+https://github.com/jlebowitsch/powershellscripts
+https://sc1.checkpoint.com/documents/R80/APIs/?#cli/add-host
+
+
+#>
 
 param(
 

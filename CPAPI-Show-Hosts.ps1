@@ -1,4 +1,29 @@
-# show hosts return the list of hosts
+
+<#
+
+
+.SYNOPSIS
+This Powershell Script retrieves the list of hosts from the SmartCenter database.
+
+.DESCRIPTION
+this Script uses the get-hosts API to retrieve hosts from Smartcenter. It creates two global objects, myCPhostsObjecs and myCPhostsjson, the first is a hashtable of the hosts, and the other is a json of the same. 
+it exposes the parameters of the API as optional.
+
+.EXAMPLE
+
+
+.NOTES
+Some options of the Add-host API are not implemented in this script!
+
+
+.LINK
+https://github.com/jlebowitsch/powershellscripts
+https://sc1.checkpoint.com/documents/R80/APIs/?#web/show-hosts
+
+
+#>
+
+
 param(
 
     [Parameter(Mandatory=$false, HelpMessage="No more than that many results will be returned")][ValidateRange(1,9999)][Int] $limit,

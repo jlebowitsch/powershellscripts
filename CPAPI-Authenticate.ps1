@@ -1,5 +1,29 @@
-# This is a standalone login script. It will leave behind a parameter, "myCPHeader", that subsequent scripts can use to authenticate API calls to SmartCenter.
-# It also leaves begind a parameter, "myCPSmartCenterIPAddress", that should be used in constructing the URI for calls.
+
+<#
+
+
+.SYNOPSIS
+This Powershell Script authenticates users to the Check Point API of specific SmartCenter Servers or domains.
+
+.DESCRIPTION
+The script allows users to authenticate themselves to some specific Check Point SmartCenter or Domain. 
+Users can enter parameters (username, password, domain, server address) in advance or interactively, when running the scripts. 
+If Authenthe script leaves behind in the shell environment two objects, $myCPHeader and $mySmartCenterAddress, that can be used to create additional calls to the APIs. 
+The script also outputs the contents of the reply from the server, if authentication succeeds.
+
+.EXAMPLE
+PS C:\Users\lebowits\Documents\GitHub\powershellscripts> .\CPAPI-Authenticate.ps1 -username user  -mySmartCenterAddress 1.1.1.1:8080
+
+.NOTES
+Entering the password in cleartext is optional. If you don't enter that parameter, you'll be prompted to enter the password into a secured string
+
+
+.LINK
+https://github.com/jlebowitsch/powershellscripts
+
+
+#>
+
 
 param(
 
@@ -23,7 +47,8 @@ $mysid=""
 $myaddhostresponse=""
 $mypublishresponse=""
 
-$global:myCPSmartCenterIPAddress=$mySmartCenterAddress
+
+
 
 # securely prompt for password if none was provided
 
@@ -35,11 +60,12 @@ if ($ClearTextPassword -eq "")
 
 #create credential json
 $myCredentialhash=@{user=$username;password=$password}
-## if($DomainName.length -gt 0){$myCredentialhash.add("domain", $DomainName) }
+
+if($DomainName.length -gt 0){$myCredentialhash.add("domain", $DomainName) }
 $myjson=$myCredentialhash | convertto-json -compress
 
 # create login URI
-$loginURI="https://${myCPSmartCenterIPAddress}/web_api/login"
+$loginURI="https://${mySmartCenterAddress}/web_api/login"
 
 
 #allow self signed certs
@@ -69,3 +95,5 @@ $mysid=$myresponsecontent.sid
 $global:myCPHeader=@{"x-chkp-sid"=$mysid}
 $myresponsecontent
 
+## make the SmartCenter Address a Global Parameter
+$global:myCPSmartCenterIPAddress=$mySmartCenterAddress
