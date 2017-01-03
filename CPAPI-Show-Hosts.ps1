@@ -58,7 +58,7 @@ $myShowHostsURI="https://${myCPSmartCenterIPAddress}/web_api/show-hosts"
 $myrequestbody=@{} 
 if ($limit.Length -gt 0){$myrequestbody.add("limit", $limit)}
 if ($offset.Length -gt 0){$myrequestbody.add("offset", $offset)}
-if ($order.Length -gt 0){$myrequestbody.add("order", $order)}
+if ($order.Length -gt 0){$myrequestbody.add( @{$order=""})}
 if ($details_level.Length -gt 0){$myrequestbody.add("details-level", $details_level)}
 $myrequestbodyjson=$myrequestbody | convertto-json -compress
 
