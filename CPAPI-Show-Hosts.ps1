@@ -29,6 +29,7 @@ param(
     [Parameter(Mandatory=$false, HelpMessage="No more than that many results will be returned")][ValidateRange(1,9999)][Int] $limit,
 	[Parameter(Mandatory=$false, HelpMessage="Skip that many results before beginning to return them")][ValidateRange(0,99999)][Int] $offset,
 	[Parameter(Mandatory=$false, HelpMessage="Sorts results by the given field. The default is the random order")][ValidateSet("ASC", "DESC")][String] $order,
+	[Parameter(Mandatory=$false, HelpMessage="The column by which to order the list. Can be name or uid")][ValidateSet("name", "uid")][String] $ordercolumn,
 	[Parameter(Mandatory=$false, HelpMessage="The level of detail for some of the fields in the response can vary from showing only the UID value of the object to a fully detailed representation of the object.")][ValidateSet("uid", "standard","full")][String]$details_level
 	
 	 
@@ -56,9 +57,13 @@ $myShowHostsURI="https://${myCPSmartCenterIPAddress}/web_api/show-hosts"
 
 
 $myrequestbody=@{} 
-if ($limit.Length -gt 0){$myrequestbody.add("limit", $limit)}
-if ($offset.Length -gt 0){$myrequestbody.add("offset", $offset)}
-if ($order.Length -gt 0){$myrequestbody.add( @{$order=""})}
+if ($limit -gt 0){$myrequestbody.add("limit", $limit)}
+if ($offset -gt 0){$myrequestbody.add("offset", $offset)}
+if ($order.Length -gt 0){ 
+                            if ($ordercolumn.length -gt 1){$ordparam=$ordercolumn}
+                            else {$ordparam="name"}
+                            $myrequestbody.add("order",@(@{$order=$ordparam})) #the value of order is an array
+                         }
 if ($details_level.Length -gt 0){$myrequestbody.add("details-level", $details_level)}
 $myrequestbodyjson=$myrequestbody | convertto-json -compress
 
